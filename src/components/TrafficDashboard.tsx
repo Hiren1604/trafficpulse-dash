@@ -2,9 +2,6 @@ import { useState } from 'react';
 import { TrafficSidebar } from './TrafficSidebar';
 import { TrafficMap } from './TrafficMap';
 import { SignalControlPanel } from './SignalControlPanel';
-import { AnalyticsDashboard } from './AnalyticsDashboard';
-import { Button } from '@/components/ui/button';
-import { BarChart3, Map, Activity } from 'lucide-react';
 
 export interface TrafficSignal {
   id: string;
@@ -37,34 +34,33 @@ export interface HotspotArea {
 export const TrafficDashboard = () => {
   const [selectedSignal, setSelectedSignal] = useState<TrafficSignal | null>(null);
   const [selectedHotspot, setSelectedHotspot] = useState<string | null>(null);
-  const [activeView, setActiveView] = useState<'map' | 'analytics'>('map');
 
-  // Mock data with Indian locations - in real app this would come from API
+  // Mock data - in real app this would come from API
   const trafficAreas: TrafficArea[] = [
     {
       id: '1',
-      name: 'Connaught Place',
+      name: 'Downtown Business District',
       congestionLevel: 'high',
       signalCount: 12,
       lastUpdated: '2 min ago'
     },
     {
       id: '2',
-      name: 'Karol Bagh Junction',
+      name: 'University Avenue',
       congestionLevel: 'medium',
       signalCount: 8,
       lastUpdated: '1 min ago'
     },
     {
       id: '3',
-      name: 'ITO Intersection',
+      name: 'Residential North',
       congestionLevel: 'low',
       signalCount: 6,
       lastUpdated: '3 min ago'
     },
     {
       id: '4',
-      name: 'AIIMS Flyover',
+      name: 'Industrial Zone',
       congestionLevel: 'medium',
       signalCount: 4,
       lastUpdated: '1 min ago'
@@ -73,95 +69,69 @@ export const TrafficDashboard = () => {
 
   const trafficSignals: TrafficSignal[] = [
     {
-      id: 'DL-001',
-      latitude: 28.6321,
-      longitude: 77.2194,
+      id: 'sig-1',
+      latitude: 37.7749,
+      longitude: -122.4194,
       status: 'green',
-      location: 'CP Central Circle',
+      location: 'Main St & 1st Ave',
       isActive: true
     },
     {
-      id: 'DL-002',
-      latitude: 28.6139,
-      longitude: 77.2090,
+      id: 'sig-2',
+      latitude: 37.7849,
+      longitude: -122.4094,
       status: 'red',
-      location: 'India Gate Circle',
+      location: 'Broadway & 2nd St',
       isActive: true
     },
     {
-      id: 'DL-003',
-      latitude: 28.6252,
-      longitude: 77.2065,
+      id: 'sig-3',
+      latitude: 37.7649,
+      longitude: -122.4294,
       status: 'amber',
-      location: 'Khan Market Junction',
+      location: 'Central Ave & Oak St',
       isActive: true
     },
     {
-      id: 'DL-004',
-      latitude: 28.5494,
-      longitude: 77.2500,
+      id: 'sig-4',
+      latitude: 37.7549,
+      longitude: -122.4394,
       status: 'green',
-      location: 'Saket Metro Station',
-      isActive: true
-    },
-    {
-      id: 'DL-005',
-      latitude: 28.6304,
-      longitude: 77.2177,
-      status: 'red',
-      location: 'Rajiv Chowk Metro',
+      location: 'Park Blvd & Pine St',
       isActive: false
-    },
-    {
-      id: 'DL-006',
-      latitude: 28.5355,
-      longitude: 77.3910,
-      status: 'green',
-      location: 'Noida Sector 18',
-      isActive: true
     }
   ];
 
   const hotspots: HotspotArea[] = [
     {
       id: 'hot-1',
-      name: 'ITO Traffic Junction',
-      latitude: 28.6289,
-      longitude: 77.2065,
+      name: 'Downtown Intersection',
+      latitude: 37.7749,
+      longitude: -122.4194,
       severity: 'critical',
       aiDetected: true,
-      vehicleCount: 145,
-      estimatedDelay: '12-18 min'
-    },
-    {
-      id: 'hot-2',
-      name: 'AIIMS Flyover Exit',
-      latitude: 28.5672,
-      longitude: 77.2100,
-      severity: 'high',
-      aiDetected: true,
-      vehicleCount: 98,
+      vehicleCount: 45,
       estimatedDelay: '8-12 min'
     },
     {
-      id: 'hot-3',
-      name: 'Lajpat Nagar Market',
-      latitude: 28.5675,
-      longitude: 77.2434,
-      severity: 'medium',
-      aiDetected: true,
-      vehicleCount: 67,
-      estimatedDelay: '4-6 min'
-    },
-    {
-      id: 'hot-4',
-      name: 'Nehru Place Metro',
-      latitude: 28.5494,
-      longitude: 77.2519,
+      id: 'hot-2',
+      name: 'Stadium Exit Route',
+      latitude: 37.7649,
+      longitude: -122.4294,
       severity: 'high',
       aiDetected: true,
-      vehicleCount: 89,
-      estimatedDelay: '6-10 min'
+      vehicleCount: 32,
+      estimatedDelay: '5-8 min'
+    },
+    {
+      id: 'hot-3',
+      name: 'Shopping Center Access',
+      latitude: 37.7549,
+      longitude: -122.4394,
+      severity: 'medium',
+      aiDetected: true,
+      vehicleCount: 18,
+      estimatedDelay: '2-4 min'
     }
   ];
 
@@ -205,72 +175,34 @@ export const TrafficDashboard = () => {
       <div className="flex-1 flex flex-col">
         {/* Header */}
         <header className="dashboard-card m-4 p-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-bold text-foreground mb-2">
-                Traffic Management System - Delhi NCR
-              </h1>
-              <p className="text-muted-foreground">
-                Real-time traffic monitoring and signal control dashboard
-              </p>
-            </div>
-            
-            {/* View Toggle */}
-            <div className="flex items-center gap-2 p-1 bg-muted/30 rounded-lg">
-              <Button
-                variant={activeView === 'map' ? 'default' : 'ghost'}
-                size="sm"
-                onClick={() => setActiveView('map')}
-                className="h-8 px-3 text-xs"
-              >
-                <Map className="w-3 h-3 mr-1" />
-                Map View
-              </Button>
-              <Button
-                variant={activeView === 'analytics' ? 'default' : 'ghost'}
-                size="sm"
-                onClick={() => setActiveView('analytics')}
-                className="h-8 px-3 text-xs"
-              >
-                <BarChart3 className="w-3 h-3 mr-1" />
-                Analytics
-              </Button>
-            </div>
-          </div>
+          <h1 className="text-2xl font-bold text-foreground mb-2">
+            Traffic Management System
+          </h1>
+          <p className="text-muted-foreground">
+            Real-time traffic monitoring and signal control dashboard
+          </p>
         </header>
 
-        {/* Main Content Area */}
+        {/* Map and Control Panel */}
         <div className="flex-1 flex gap-4 m-4">
-          {/* Map or Analytics */}
+          {/* Map */}
           <div className="flex-1">
-            {activeView === 'map' ? (
-              <TrafficMap
-                signals={trafficSignals}
-                hotspots={hotspots}
-                onSignalClick={handleSignalClick}
-                selectedHotspot={selectedHotspot}
-              />
-            ) : (
-              <div className="h-full dashboard-card p-6">
-                <AnalyticsDashboard />
-              </div>
-            )}
+            <TrafficMap
+              signals={trafficSignals}
+              hotspots={hotspots}
+              onSignalClick={handleSignalClick}
+              selectedHotspot={selectedHotspot}
+            />
           </div>
 
-          {/* Right Sidebar - Signal Control Panel or Analytics */}
-          {activeView === 'map' && selectedSignal && (
+          {/* Signal Control Panel */}
+          {selectedSignal && (
             <div className="w-80">
               <SignalControlPanel
                 signal={selectedSignal}
                 onStatusChange={handleSignalStatusChange}
                 onClose={() => setSelectedSignal(null)}
               />
-            </div>
-          )}
-
-          {activeView === 'analytics' && (
-            <div className="w-80">
-              <AnalyticsDashboard />
             </div>
           )}
         </div>
