@@ -29,8 +29,8 @@ export const TrafficMap = ({ signals, hotspots, onSignalClick, selectedHotspot }
 
     // Initialize map
     map.current = L.map(mapContainer.current, {
-      center: [37.7749, -122.4194], // San Francisco
-      zoom: 12,
+      center: [28.6139, 77.2090], // New Delhi, India
+      zoom: 11,
       zoomControl: false
     });
 
