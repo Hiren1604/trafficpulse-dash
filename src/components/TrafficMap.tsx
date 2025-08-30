@@ -1,11 +1,15 @@
 import { useEffect, useRef, useState } from 'react';
-import mapboxgl from 'mapbox-gl';
-import 'mapbox-gl/dist/mapbox-gl.css';
-import { Card } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { AlertCircle } from 'lucide-react';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
 import { TrafficSignal, HotspotArea } from './TrafficDashboard';
+
+// Fix default markers
+delete (L.Icon.Default.prototype as any)._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-2x.png',
+  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
+});
 
 interface TrafficMapProps {
   signals: TrafficSignal[];
@@ -16,156 +20,183 @@ interface TrafficMapProps {
 
 export const TrafficMap = ({ signals, hotspots, onSignalClick, selectedHotspot }: TrafficMapProps) => {
   const mapContainer = useRef<HTMLDivElement>(null);
-  const map = useRef<mapboxgl.Map | null>(null);
-  const [mapboxToken, setMapboxToken] = useState('');
-  const [showTokenInput, setShowTokenInput] = useState(true);
-  const [mapInitialized, setMapInitialized] = useState(false);
-
-  const initializeMap = () => {
-    if (!mapContainer.current || !mapboxToken) return;
-
-    try {
-      mapboxgl.accessToken = mapboxToken;
-      
-      map.current = new mapboxgl.Map({
-        container: mapContainer.current,
-        style: 'mapbox://styles/mapbox/dark-v11',
-        center: [-122.4194, 37.7749], // San Francisco
-        zoom: 12,
-        pitch: 45,
-        bearing: 0
-      });
-
-      map.current.addControl(
-        new mapboxgl.NavigationControl({
-          visualizePitch: true,
-        }),
-        'top-right'
-      );
-
-      map.current.on('load', () => {
-        if (!map.current) return;
-
-        // Add traffic signals
-        signals.forEach((signal) => {
-          const el = document.createElement('div');
-          el.className = `traffic-signal traffic-signal-${signal.status} ${signal.isActive ? 'active' : ''}`;
-          el.style.cursor = 'pointer';
-          
-          const marker = new mapboxgl.Marker(el)
-            .setLngLat([signal.longitude, signal.latitude])
-            .setPopup(
-              new mapboxgl.Popup({ offset: 25 }).setHTML(
-                `<div class="p-2">
-                  <h3 class="font-semibold text-sm">${signal.location}</h3>
-                  <p class="text-xs text-muted-foreground mt-1">Status: <span class="capitalize">${signal.status}</span></p>
-                  <p class="text-xs text-muted-foreground">Click to control</p>
-                </div>`
-              )
-            )
-            .addTo(map.current);
-
-          el.addEventListener('click', () => {
-            onSignalClick(signal);
-          });
-        });
-
-        // Add hotspot areas
-        hotspots.forEach((hotspot) => {
-          const el = document.createElement('div');
-          el.className = 'relative';
-          el.innerHTML = `
-            <div class="w-6 h-6 bg-red-500/80 rounded-full animate-pulse-glow border-2 border-red-300 cursor-pointer flex items-center justify-center">
-              <div class="w-2 h-2 bg-red-200 rounded-full"></div>
-            </div>
-          `;
-
-          new mapboxgl.Marker(el)
-            .setLngLat([hotspot.longitude, hotspot.latitude])
-            .setPopup(
-              new mapboxgl.Popup({ offset: 25 }).setHTML(
-                `<div class="p-3">
-                  <h3 class="font-semibold text-sm">${hotspot.name}</h3>
-                  <p class="text-xs text-muted-foreground mt-1">Severity: <span class="capitalize text-red-400">${hotspot.severity}</span></p>
-                  <p class="text-xs text-muted-foreground">Vehicles: ${hotspot.vehicleCount}</p>
-                  <p class="text-xs text-muted-foreground">Estimated Delay: ${hotspot.estimatedDelay}</p>
-                  <div class="mt-2 px-2 py-1 bg-red-500/20 rounded text-xs text-red-300 border border-red-500/30">
-                    AI Detected Congestion
-                  </div>
-                </div>`
-              )
-            )
-            .addTo(map.current);
-        });
-
-        setMapInitialized(true);
-      });
-
-      map.current.on('error', (e) => {
-        console.error('Map error:', e);
-        setShowTokenInput(true);
-      });
-
-    } catch (error) {
-      console.error('Mapbox initialization error:', error);
-      setShowTokenInput(true);
-    }
-  };
+  const map = useRef<L.Map | null>(null);
+  const signalMarkers = useRef<Map<string, L.Marker>>(new Map());
+  const hotspotMarkers = useRef<Map<string, L.Marker>>(new Map());
 
   useEffect(() => {
-    if (selectedHotspot && map.current && mapInitialized) {
-      const hotspot = hotspots.find(h => h.id === selectedHotspot);
-      if (hotspot) {
-        map.current.flyTo({
-          center: [hotspot.longitude, hotspot.latitude],
-          zoom: 15,
-          duration: 2000
-        });
-      }
-    }
-  }, [selectedHotspot, hotspots, mapInitialized]);
+    if (!mapContainer.current) return;
 
-  const handleTokenSubmit = () => {
-    if (mapboxToken.trim()) {
-      setShowTokenInput(false);
-      initializeMap();
-    }
-  };
+    // Initialize map
+    map.current = L.map(mapContainer.current, {
+      center: [37.7749, -122.4194], // San Francisco
+      zoom: 12,
+      zoomControl: false
+    });
 
-  if (showTokenInput) {
-    return (
-      <Card className="dashboard-card h-full flex items-center justify-center p-8">
-        <div className="text-center max-w-md">
-          <AlertCircle className="w-12 h-12 text-amber-500 mx-auto mb-4" />
-          <h3 className="text-lg font-semibold mb-2">Mapbox Token Required</h3>
-          <p className="text-muted-foreground text-sm mb-6">
-            To display the interactive map, please enter your Mapbox public token. 
-            You can get one from{' '}
-            <a 
-              href="https://mapbox.com/" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="text-primary hover:underline"
-            >
-              mapbox.com
-            </a>
+    // Add zoom control to top-right
+    L.control.zoom({ position: 'topright' }).addTo(map.current);
+
+    // Add OpenStreetMap tiles (completely free!)
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap contributors',
+      maxZoom: 18,
+    }).addTo(map.current);
+
+    // Create custom icons for traffic signals
+    const createSignalIcon = (status: 'red' | 'amber' | 'green', isActive: boolean) => {
+      const color = status === 'red' ? '#ef4444' : status === 'amber' ? '#f59e0b' : '#10b981';
+      const opacity = isActive ? 1 : 0.5;
+      
+      return L.divIcon({
+        html: `
+          <div style="
+            width: 24px;
+            height: 24px;
+            background: ${color};
+            border: 2px solid #ffffff;
+            border-radius: 50%;
+            box-shadow: 0 0 10px rgba(0,0,0,0.3), 0 0 20px ${color}80;
+            opacity: ${opacity};
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+          ">
+            <div style="
+              width: 8px;
+              height: 8px;
+              background: rgba(255,255,255,0.9);
+              border-radius: 50%;
+            "></div>
+          </div>
+        `,
+        className: 'traffic-signal-marker',
+        iconSize: [24, 24],
+        iconAnchor: [12, 12],
+      });
+    };
+
+    // Create custom icon for hotspots
+    const createHotspotIcon = (severity: 'critical' | 'high' | 'medium') => {
+      const color = severity === 'critical' ? '#dc2626' : severity === 'high' ? '#ea580c' : '#d97706';
+      
+      return L.divIcon({
+        html: `
+          <div style="
+            width: 20px;
+            height: 20px;
+            background: ${color};
+            border: 2px solid #ffffff;
+            border-radius: 50%;
+            box-shadow: 0 0 15px ${color}80;
+            animation: pulse 2s infinite;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+          ">
+            <div style="
+              width: 6px;
+              height: 6px;
+              background: #ffffff;
+              border-radius: 50%;
+            "></div>
+          </div>
+          <style>
+            @keyframes pulse {
+              0%, 100% { transform: scale(1); opacity: 1; }
+              50% { transform: scale(1.2); opacity: 0.7; }
+            }
+          </style>
+        `,
+        className: 'hotspot-marker',
+        iconSize: [20, 20],
+        iconAnchor: [10, 10],
+      });
+    };
+
+    // Add traffic signals to map
+    signals.forEach((signal) => {
+      const marker = L.marker([signal.latitude, signal.longitude], {
+        icon: createSignalIcon(signal.status, signal.isActive)
+      }).addTo(map.current!);
+
+      marker.bindPopup(`
+        <div style="font-family: system-ui; padding: 8px;">
+          <h3 style="margin: 0 0 8px 0; font-size: 14px; font-weight: 600;">${signal.location}</h3>
+          <p style="margin: 4px 0; font-size: 12px; color: #666;">
+            Status: <span style="text-transform: capitalize; font-weight: 500;">${signal.status}</span>
           </p>
-          <div className="space-y-4">
-            <Input
-              type="password"
-              placeholder="Enter Mapbox public token..."
-              value={mapboxToken}
-              onChange={(e) => setMapboxToken(e.target.value)}
-              onKeyPress={(e) => e.key === 'Enter' && handleTokenSubmit()}
-            />
-            <Button onClick={handleTokenSubmit} className="w-full">
-              Initialize Map
-            </Button>
+          <p style="margin: 4px 0; font-size: 12px; color: #666;">Click to control</p>
+        </div>
+      `);
+
+      marker.on('click', () => {
+        onSignalClick(signal);
+      });
+
+      signalMarkers.current.set(signal.id, marker);
+    });
+
+    // Add hotspot areas to map
+    hotspots.forEach((hotspot) => {
+      const marker = L.marker([hotspot.latitude, hotspot.longitude], {
+        icon: createHotspotIcon(hotspot.severity)
+      }).addTo(map.current!);
+
+      marker.bindPopup(`
+        <div style="font-family: system-ui; padding: 12px;">
+          <h3 style="margin: 0 0 8px 0; font-size: 14px; font-weight: 600;">${hotspot.name}</h3>
+          <p style="margin: 4px 0; font-size: 12px; color: #666;">
+            Severity: <span style="text-transform: capitalize; color: #dc2626; font-weight: 500;">${hotspot.severity}</span>
+          </p>
+          <p style="margin: 4px 0; font-size: 12px; color: #666;">Vehicles: ${hotspot.vehicleCount}</p>
+          <p style="margin: 4px 0; font-size: 12px; color: #666;">Estimated Delay: ${hotspot.estimatedDelay}</p>
+          <div style="
+            margin-top: 8px;
+            padding: 4px 8px;
+            background: rgba(220, 38, 38, 0.1);
+            border: 1px solid rgba(220, 38, 38, 0.2);
+            border-radius: 4px;
+            font-size: 11px;
+            color: #dc2626;
+          ">
+            AI Detected Congestion
           </div>
         </div>
-      </Card>
-    );
-  }
+      `);
+
+      hotspotMarkers.current.set(hotspot.id, marker);
+    });
+
+    return () => {
+      if (map.current) {
+        map.current.remove();
+        map.current = null;
+      }
+      signalMarkers.current.clear();
+      hotspotMarkers.current.clear();
+    };
+  }, [signals, hotspots, onSignalClick]);
+
+  // Handle hotspot selection
+  useEffect(() => {
+    if (selectedHotspot && map.current) {
+      const hotspot = hotspots.find(h => h.id === selectedHotspot);
+      if (hotspot) {
+        map.current.flyTo([hotspot.latitude, hotspot.longitude], 15, {
+          duration: 2
+        });
+        
+        // Open popup for selected hotspot
+        const marker = hotspotMarkers.current.get(selectedHotspot);
+        if (marker) {
+          marker.openPopup();
+        }
+      }
+    }
+  }, [selectedHotspot, hotspots]);
 
   return (
     <div className="h-full relative">
@@ -176,19 +207,47 @@ export const TrafficMap = ({ signals, hotspots, onSignalClick, selectedHotspot }
         <h4 className="font-semibold text-sm mb-3">Map Legend</h4>
         <div className="space-y-2 text-xs">
           <div className="flex items-center gap-2">
-            <div className="traffic-signal traffic-signal-red active"></div>
+            <div style={{
+              width: '16px',
+              height: '16px',
+              background: '#ef4444',
+              border: '2px solid #ffffff',
+              borderRadius: '50%',
+              boxShadow: '0 0 8px #ef444480'
+            }}></div>
             <span>Red Signal</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="traffic-signal traffic-signal-amber active"></div>
+            <div style={{
+              width: '16px',
+              height: '16px',
+              background: '#f59e0b',
+              border: '2px solid #ffffff',
+              borderRadius: '50%',
+              boxShadow: '0 0 8px #f59e0b80'
+            }}></div>
             <span>Amber Signal</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="traffic-signal traffic-signal-green active"></div>
+            <div style={{
+              width: '16px',
+              height: '16px',
+              background: '#10b981',
+              border: '2px solid #ffffff',
+              borderRadius: '50%',
+              boxShadow: '0 0 8px #10b98180'
+            }}></div>
             <span>Green Signal</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-4 h-4 bg-red-500/80 rounded-full animate-pulse border border-red-300"></div>
+            <div style={{
+              width: '14px',
+              height: '14px',
+              background: '#dc2626',
+              border: '2px solid #ffffff',
+              borderRadius: '50%',
+              animation: 'pulse 2s infinite'
+            }}></div>
             <span>AI Hotspot</span>
           </div>
         </div>
@@ -200,6 +259,11 @@ export const TrafficMap = ({ signals, hotspots, onSignalClick, selectedHotspot }
           <div className="status-indicator bg-green-500 animate-pulse"></div>
           <span className="text-sm font-medium">Live Tracking</span>
         </div>
+      </div>
+
+      {/* Map Attribution */}
+      <div className="absolute bottom-2 right-2 text-xs text-muted-foreground bg-black/50 px-2 py-1 rounded">
+        Free OpenStreetMap
       </div>
     </div>
   );
