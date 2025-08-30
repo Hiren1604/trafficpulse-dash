@@ -61,7 +61,40 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
+				},
+				traffic: {
+					red: 'hsl(var(--traffic-red))',
+					'red-glow': 'hsl(var(--traffic-red-glow))',
+					amber: 'hsl(var(--traffic-amber))',
+					'amber-glow': 'hsl(var(--traffic-amber-glow))',
+					green: 'hsl(var(--traffic-green))',
+					'green-glow': 'hsl(var(--traffic-green-glow))'
+				},
+				status: {
+					high: 'hsl(var(--status-high))',
+					medium: 'hsl(var(--status-medium))',
+					low: 'hsl(var(--status-low))',
+					normal: 'hsl(var(--status-normal))'
 				}
+			},
+			backgroundImage: {
+				'gradient-dashboard': 'var(--gradient-dashboard)',
+				'gradient-card': 'var(--gradient-card)',
+				'gradient-traffic-red': 'var(--gradient-traffic-red)',
+				'gradient-traffic-amber': 'var(--gradient-traffic-amber)',
+				'gradient-traffic-green': 'var(--gradient-traffic-green)'
+			},
+			boxShadow: {
+				'dashboard': 'var(--shadow-dashboard)',
+				'card': 'var(--shadow-card)',
+				'traffic': 'var(--shadow-traffic)',
+				'glow-red': 'var(--glow-red)',
+				'glow-amber': 'var(--glow-amber)',
+				'glow-green': 'var(--glow-green)'
+			},
+			transitionTimingFunction: {
+				'smooth': 'var(--transition-smooth)',
+				'bounce': 'var(--transition-bounce)'
 			},
 			borderRadius: {
 				lg: 'var(--radius)',
@@ -84,11 +117,27 @@ export default {
 					to: {
 						height: '0'
 					}
+				},
+				'pulse-glow': {
+					'0%, 100%': {
+						opacity: '1',
+						transform: 'scale(1)'
+					},
+					'50%': {
+						opacity: '0.7',
+						transform: 'scale(1.05)'
+					}
+				},
+				'signal-blink': {
+					'0%, 50%': { opacity: '1' },
+					'51%, 100%': { opacity: '0.3' }
 				}
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
-				'accordion-up': 'accordion-up 0.2s ease-out'
+				'accordion-up': 'accordion-up 0.2s ease-out',
+				'pulse-glow': 'pulse-glow 2s ease-in-out infinite',
+				'signal-blink': 'signal-blink 1s ease-in-out infinite'
 			}
 		}
 	},
