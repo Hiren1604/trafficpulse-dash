@@ -15,10 +15,11 @@ interface TrafficMapProps {
   signals: TrafficSignal[];
   hotspots: HotspotArea[];
   onSignalClick: (signal: TrafficSignal) => void;
+  onHotspotClick?: (hotspot: HotspotArea) => void;
   selectedHotspot: string | null;
 }
 
-export const TrafficMap = ({ signals, hotspots, onSignalClick, selectedHotspot }: TrafficMapProps) => {
+export const TrafficMap = ({ signals, hotspots, onSignalClick, onHotspotClick, selectedHotspot }: TrafficMapProps) => {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<L.Map | null>(null);
   const signalMarkers = useRef<Map<string, L.Marker>>(new Map());
@@ -163,10 +164,16 @@ export const TrafficMap = ({ signals, hotspots, onSignalClick, selectedHotspot }
             font-size: 11px;
             color: #dc2626;
           ">
-            AI Detected Congestion
+            AI Detected Congestion - Click to Control
           </div>
         </div>
       `);
+
+      marker.on('click', () => {
+        if (onHotspotClick) {
+          onHotspotClick(hotspot);
+        }
+      });
 
       hotspotMarkers.current.set(hotspot.id, marker);
     });
@@ -203,62 +210,38 @@ export const TrafficMap = ({ signals, hotspots, onSignalClick, selectedHotspot }
     <div className="h-full relative">
       <div ref={mapContainer} className="map-container h-full w-full" />
       
-      {/* Map Legend */}
-      <div className="absolute bottom-4 left-4 dashboard-card p-4 max-w-xs">
-        <h4 className="font-semibold text-sm mb-3">Map Legend</h4>
+      {/* Map Legend - Fixed visibility */}
+      <div className="absolute bottom-4 left-4 dashboard-card p-4 max-w-xs z-[1000] bg-background/95 backdrop-blur-sm shadow-lg">
+        <h4 className="font-semibold text-sm mb-3 text-foreground">Map Legend</h4>
         <div className="space-y-2 text-xs">
           <div className="flex items-center gap-2">
-            <div style={{
-              width: '16px',
-              height: '16px',
-              background: '#ef4444',
-              border: '2px solid #ffffff',
-              borderRadius: '50%',
-              boxShadow: '0 0 8px #ef444480'
-            }}></div>
-            <span>Red Signal</span>
+            <div className="w-4 h-4 bg-red-500 border-2 border-white rounded-full shadow-lg"></div>
+            <span className="text-foreground">Red Signal</span>
           </div>
           <div className="flex items-center gap-2">
-            <div style={{
-              width: '16px',
-              height: '16px',
-              background: '#f59e0b',
-              border: '2px solid #ffffff',
-              borderRadius: '50%',
-              boxShadow: '0 0 8px #f59e0b80'
-            }}></div>
-            <span>Amber Signal</span>
+            <div className="w-4 h-4 bg-amber-500 border-2 border-white rounded-full shadow-lg"></div>
+            <span className="text-foreground">Amber Signal</span>
           </div>
           <div className="flex items-center gap-2">
-            <div style={{
-              width: '16px',
-              height: '16px',
-              background: '#10b981',
-              border: '2px solid #ffffff',
-              borderRadius: '50%',
-              boxShadow: '0 0 8px #10b98180'
-            }}></div>
-            <span>Green Signal</span>
+            <div className="w-4 h-4 bg-green-500 border-2 border-white rounded-full shadow-lg"></div>
+            <span className="text-foreground">Green Signal</span>
           </div>
           <div className="flex items-center gap-2">
-            <div style={{
-              width: '14px',
-              height: '14px',
-              background: '#dc2626',
-              border: '2px solid #ffffff',
-              borderRadius: '50%',
-              animation: 'pulse 2s infinite'
-            }}></div>
-            <span>AI Hotspot</span>
+            <div className="w-3.5 h-3.5 bg-red-600 border-2 border-white rounded-full animate-pulse shadow-lg"></div>
+            <span className="text-foreground">AI Hotspot</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-4 h-4 bg-gray-500 border-2 border-white rounded-full opacity-50 shadow-lg"></div>
+            <span className="text-foreground">Offline Signal</span>
           </div>
         </div>
       </div>
 
       {/* Status Badge */}
-      <div className="absolute top-4 right-4 dashboard-card p-2 px-4">
+      <div className="absolute top-4 right-4 dashboard-card p-2 px-4 z-[1000] bg-background/95 backdrop-blur-sm shadow-lg">
         <div className="flex items-center gap-2">
-          <div className="status-indicator bg-green-500 animate-pulse"></div>
-          <span className="text-sm font-medium">Live Tracking</span>
+          <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+          <span className="text-sm font-medium text-foreground">Live Tracking</span>
         </div>
       </div>
 

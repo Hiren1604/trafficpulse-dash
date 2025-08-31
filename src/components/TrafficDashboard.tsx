@@ -2,9 +2,11 @@ import { useState } from 'react';
 import { TrafficSidebar } from './TrafficSidebar';
 import { TrafficMap } from './TrafficMap';
 import { SignalControlPanel } from './SignalControlPanel';
+import { HotspotControlPanel } from './HotspotControlPanel';
 import { AnalyticsDashboard } from './AnalyticsDashboard';
+import { SystemSettings } from './SystemSettings';
 import { Button } from '@/components/ui/button';
-import { BarChart3, Map, Activity } from 'lucide-react';
+import { BarChart3, Map, Activity, Settings } from 'lucide-react';
 
 export interface TrafficSignal {
   id: string;
@@ -36,8 +38,8 @@ export interface HotspotArea {
 
 export const TrafficDashboard = () => {
   const [selectedSignal, setSelectedSignal] = useState<TrafficSignal | null>(null);
-  const [selectedHotspot, setSelectedHotspot] = useState<string | null>(null);
-  const [activeView, setActiveView] = useState<'map' | 'analytics'>('map');
+  const [selectedHotspot, setSelectedHotspot] = useState<HotspotArea | null>(null);
+  const [activeView, setActiveView] = useState<'map' | 'analytics' | 'settings'>('map');
 
   // Mock data with Indian locations - in real app this would come from API
   const trafficAreas: TrafficArea[] = [
@@ -167,15 +169,14 @@ export const TrafficDashboard = () => {
 
   const handleSignalClick = (signal: TrafficSignal) => {
     setSelectedSignal(signal);
+    setSelectedHotspot(null); // Clear hotspot selection
   };
 
   const handleHotspotClick = (hotspotId: string) => {
-    setSelectedHotspot(hotspotId);
-    // Find hotspot and center map on it
     const hotspot = hotspots.find(h => h.id === hotspotId);
     if (hotspot) {
-      // This would trigger map navigation in a real implementation
-      console.log(`Navigating to hotspot: ${hotspot.name}`);
+      setSelectedHotspot(hotspot);
+      setSelectedSignal(null); // Clear signal selection
     }
   };
 
@@ -189,6 +190,14 @@ export const TrafficDashboard = () => {
     );
   };
 
+  const handleHotspotUpdate = (hotspotId: string, updates: Partial<HotspotArea>) => {
+    // In real app, this would make an API call to update hotspot settings
+    console.log(`Updating hotspot ${hotspotId}:`, updates);
+    if (selectedHotspot && selectedHotspot.id === hotspotId) {
+      setSelectedHotspot(prev => prev ? { ...prev, ...updates } : null);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-dashboard flex">
       {/* Left Sidebar */}
@@ -197,7 +206,7 @@ export const TrafficDashboard = () => {
           trafficAreas={trafficAreas}
           hotspots={hotspots}
           onHotspotClick={handleHotspotClick}
-          selectedHotspot={selectedHotspot}
+          selectedHotspot={selectedHotspot?.id || null}
         />
       </div>
 
@@ -235,35 +244,57 @@ export const TrafficDashboard = () => {
                 <BarChart3 className="w-3 h-3 mr-1" />
                 Analytics
               </Button>
+              <Button
+                variant={activeView === 'settings' ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => setActiveView('settings')}
+                className="h-8 px-3 text-xs"
+              >
+                <Settings className="w-3 h-3 mr-1" />
+                Settings
+              </Button>
             </div>
           </div>
         </header>
 
         {/* Main Content Area */}
         <div className="flex-1 flex gap-4 m-4">
-          {/* Map or Analytics */}
+          {/* Map, Analytics, or Settings */}
           <div className="flex-1">
             {activeView === 'map' ? (
               <TrafficMap
                 signals={trafficSignals}
                 hotspots={hotspots}
                 onSignalClick={handleSignalClick}
-                selectedHotspot={selectedHotspot}
+                onHotspotClick={(hotspot) => setSelectedHotspot(hotspot)}
+                selectedHotspot={selectedHotspot?.id || null}
               />
-            ) : (
+            ) : activeView === 'analytics' ? (
               <div className="h-full dashboard-card p-6">
                 <AnalyticsDashboard />
               </div>
+            ) : (
+              <SystemSettings />
             )}
           </div>
 
-          {/* Right Sidebar - Signal Control Panel only */}
+          {/* Right Sidebar - Control Panels */}
           {activeView === 'map' && selectedSignal && (
             <div className="w-80">
               <SignalControlPanel
                 signal={selectedSignal}
                 onStatusChange={handleSignalStatusChange}
                 onClose={() => setSelectedSignal(null)}
+              />
+            </div>
+          )}
+
+          {activeView === 'map' && selectedHotspot && (
+            <div className="w-80">
+              <HotspotControlPanel
+                hotspot={selectedHotspot}
+                onUpdateHotspot={handleHotspotUpdate}
+                onClose={() => setSelectedHotspot(null)}
               />
             </div>
           )}
