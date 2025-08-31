@@ -257,7 +257,7 @@ export const TrafficDashboard = () => {
             )}
           </div>
 
-          {/* Right Sidebar - Signal Control Panel or Analytics */}
+          {/* Right Sidebar - Signal Control Panel only */}
           {activeView === 'map' && selectedSignal && (
             <div className="w-80">
               <SignalControlPanel
@@ -265,12 +265,6 @@ export const TrafficDashboard = () => {
                 onStatusChange={handleSignalStatusChange}
                 onClose={() => setSelectedSignal(null)}
               />
-            </div>
-          )}
-
-          {activeView === 'analytics' && (
-            <div className="w-80">
-              <AnalyticsDashboard />
             </div>
           )}
         </div>

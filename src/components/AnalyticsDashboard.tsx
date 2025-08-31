@@ -2,6 +2,22 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  LineChart,
+  Line,
+  PieChart,
+  Pie,
+  Cell,
+  AreaChart,
+  Area
+} from 'recharts';
 import { 
   BarChart3, 
   TrendingUp, 
@@ -10,7 +26,9 @@ import {
   Activity,
   Users,
   Timer,
-  Target
+  Target,
+  Thermometer,
+  Zap
 } from 'lucide-react';
 
 export interface AnalyticsData {
@@ -63,9 +81,41 @@ export const AnalyticsDashboard = () => {
       { hour: 9, vehicles: 523, avgDelay: 5.1 },
       { hour: 10, vehicles: 387, avgDelay: 3.8 },
       { hour: 11, vehicles: 342, avgDelay: 2.9 },
-      { hour: 12, vehicles: 398, avgDelay: 3.2 }
+      { hour: 12, vehicles: 398, avgDelay: 3.2 },
+      { hour: 13, vehicles: 423, avgDelay: 3.5 },
+      { hour: 14, vehicles: 356, avgDelay: 2.8 },
+      { hour: 15, vehicles: 445, avgDelay: 4.1 },
+      { hour: 16, vehicles: 512, avgDelay: 4.8 },
+      { hour: 17, vehicles: 598, avgDelay: 5.9 },
+      { hour: 18, vehicles: 623, avgDelay: 6.2 },
+      { hour: 19, vehicles: 487, avgDelay: 4.5 },
+      { hour: 20, vehicles: 321, avgDelay: 2.7 }
     ]
   });
+
+  // Heatmap data for traffic intensity
+  const heatmapData = [
+    { area: 'CP', intensity: 85, x: 0, y: 0 },
+    { area: 'Karol Bagh', intensity: 72, x: 1, y: 0 },
+    { area: 'ITO', intensity: 68, x: 2, y: 0 },
+    { area: 'AIIMS', intensity: 45, x: 3, y: 0 },
+    { area: 'Khan Market', intensity: 78, x: 0, y: 1 },
+    { area: 'Lajpat Nagar', intensity: 65, x: 1, y: 1 },
+    { area: 'Nehru Place', intensity: 88, x: 2, y: 1 },
+    { area: 'Saket', intensity: 52, x: 3, y: 1 },
+    { area: 'GK-1', intensity: 58, x: 0, y: 2 },
+    { area: 'GK-2', intensity: 63, x: 1, y: 2 },
+    { area: 'Defence Colony', intensity: 41, x: 2, y: 2 },
+    { area: 'Hauz Khas', intensity: 76, x: 3, y: 2 }
+  ];
+
+  // Traffic signal status pie chart data
+  const signalStatusData = [
+    { name: 'Green', value: 12, color: '#10b981' },
+    { name: 'Red', value: 8, color: '#ef4444' },
+    { name: 'Amber', value: 4, color: '#f59e0b' },
+    { name: 'Offline', value: 4, color: '#6b7280' }
+  ];
 
   // Simulate real-time updates
   useEffect(() => {
@@ -97,211 +147,302 @@ export const AnalyticsDashboard = () => {
   };
 
   return (
-    <div className="h-screen bg-card/50 backdrop-blur-sm border-l border-border/50 flex flex-col overflow-hidden">
+    <div className="h-full bg-card/50 backdrop-blur-sm border border-border/50 rounded-lg flex flex-col overflow-hidden">
       {/* Header */}
-      <div className="p-4 border-b border-border/50">
-        <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
-          <BarChart3 className="w-5 h-5 text-primary" />
-          Traffic Analytics
+      <div className="p-6 border-b border-border/50">
+        <h2 className="text-2xl font-bold text-foreground flex items-center gap-2">
+          <BarChart3 className="w-6 h-6 text-primary" />
+          Traffic Analytics Dashboard
         </h2>
-        <p className="text-sm text-muted-foreground">Real-time performance metrics</p>
+        <p className="text-sm text-muted-foreground mt-1">Real-time performance metrics & insights</p>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        {/* Key Metrics */}
-        <div className="grid grid-cols-2 gap-4">
+      <div className="flex-1 overflow-y-auto p-6 space-y-6">
+        {/* Key Metrics Row */}
+        <div className="grid grid-cols-4 gap-4">
           <Card className="dashboard-card">
             <CardContent className="p-4">
-              <div className="flex items-center gap-2 mb-2">
-                <Activity className="w-4 h-4 text-green-400" />
-                <span className="text-xs text-muted-foreground">Active Signals</span>
-              </div>
-              <div className="text-2xl font-bold text-foreground">
-                {analytics.activeSignals}/{analytics.totalSignals}
-              </div>
-              <Progress 
-                value={(analytics.activeSignals / analytics.totalSignals) * 100} 
-                className="mt-2 h-2"
-              />
-            </CardContent>
-          </Card>
-
-          <Card className="dashboard-card">
-            <CardContent className="p-4">
-              <div className="flex items-center gap-2 mb-2">
-                <Users className="w-4 h-4 text-primary" />
-                <span className="text-xs text-muted-foreground">Live Vehicles</span>
-              </div>
-              <div className="text-2xl font-bold text-foreground">
-                {analytics.totalVehicles.toLocaleString()}
-              </div>
-              <div className="text-xs text-green-400 mt-1 flex items-center gap-1">
-                <TrendingUp className="w-3 h-3" />
-                +2.3% from last hour
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-green-500/10 rounded-lg">
+                  <Activity className="w-5 h-5 text-green-400" />
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Active Signals</p>
+                  <p className="text-2xl font-bold text-foreground">
+                    {analytics.activeSignals}/{analytics.totalSignals}
+                  </p>
+                </div>
               </div>
             </CardContent>
           </Card>
 
           <Card className="dashboard-card">
             <CardContent className="p-4">
-              <div className="flex items-center gap-2 mb-2">
-                <Timer className="w-4 h-4 text-amber-400" />
-                <span className="text-xs text-muted-foreground">Avg Delay</span>
-              </div>
-              <div className="text-2xl font-bold text-foreground">
-                {analytics.averageDelay}
-              </div>
-              <div className="text-xs text-red-400 mt-1">
-                +0.8min from morning
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-blue-500/10 rounded-lg">
+                  <Users className="w-5 h-5 text-blue-400" />
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Live Vehicles</p>
+                  <p className="text-2xl font-bold text-foreground">
+                    {analytics.totalVehicles.toLocaleString()}
+                  </p>
+                </div>
               </div>
             </CardContent>
           </Card>
 
           <Card className="dashboard-card">
             <CardContent className="p-4">
-              <div className="flex items-center gap-2 mb-2">
-                <Clock className="w-4 h-4 text-purple-400" />
-                <span className="text-xs text-muted-foreground">Peak Hours</span>
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-amber-500/10 rounded-lg">
+                  <Timer className="w-5 h-5 text-amber-400" />
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Avg Delay</p>
+                  <p className="text-2xl font-bold text-foreground">
+                    {analytics.averageDelay}
+                  </p>
+                </div>
               </div>
-              <div className="text-sm font-medium text-foreground">
-                {analytics.peakHours.join(', ')}
-              </div>
-              <div className="text-xs text-muted-foreground mt-1">
-                Current: Rush Hour
+            </CardContent>
+          </Card>
+
+          <Card className="dashboard-card">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-red-500/10 rounded-lg">
+                  <AlertTriangle className="w-5 h-5 text-red-400" />
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Hotspots</p>
+                  <p className="text-2xl font-bold text-foreground">
+                    {analytics.congestionAreas.filter(a => a.level > 70).length}
+                  </p>
+                </div>
               </div>
             </CardContent>
           </Card>
         </div>
 
-        {/* Congestion Levels */}
-        <Card className="dashboard-card">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base flex items-center gap-2">
-              <AlertTriangle className="w-4 h-4 text-red-400" />
-              Live Congestion Levels
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            {analytics.congestionAreas.map((area, index) => (
-              <div key={index} className="space-y-2">
-                <div className="flex items-center justify-between text-sm">
-                  <span className="font-medium">{area.name}</span>
-                  <span className="text-muted-foreground">{area.vehicles} vehicles</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Progress 
-                    value={area.level} 
-                    className="flex-1 h-2"
+        {/* Charts Row */}
+        <div className="grid grid-cols-2 gap-6">
+          {/* Hourly Traffic Flow */}
+          <Card className="dashboard-card">
+            <CardHeader>
+              <CardTitle className="text-lg flex items-center gap-2">
+                <BarChart3 className="w-5 h-5 text-primary" />
+                Hourly Traffic Flow
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={300}>
+                <AreaChart data={analytics.hourlyTraffic}>
+                  <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
+                  <XAxis 
+                    dataKey="hour" 
+                    tickFormatter={(value) => `${value}:00`}
+                    fontSize={12}
                   />
-                  <span className="text-xs font-medium w-12 text-right">{area.level}%</span>
-                </div>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
+                  <YAxis fontSize={12} />
+                  <Tooltip 
+                    labelFormatter={(value) => `${value}:00`}
+                    formatter={(value: any, name: string) => [
+                      name === 'vehicles' ? `${value} vehicles` : `${value} min`,
+                      name === 'vehicles' ? 'Vehicle Count' : 'Avg Delay'
+                    ]}
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="vehicles"
+                    stroke="hsl(var(--primary))"
+                    fill="hsl(var(--primary) / 0.2)"
+                    strokeWidth={2}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="avgDelay"
+                    stroke="hsl(var(--destructive))"
+                    strokeWidth={2}
+                    dot={{ r: 3 }}
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
 
-        {/* Signal Efficiency */}
-        <Card className="dashboard-card">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base flex items-center gap-2">
-              <Target className="w-4 h-4 text-green-400" />
-              Signal Performance
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            {analytics.signalEfficiency.map((signal) => (
-              <div 
-                key={signal.id}
-                className="p-3 bg-muted/30 rounded-lg border border-border/30"
-              >
-                <div className="flex items-center justify-between mb-2">
-                  <div>
-                    <div className="font-medium text-sm">{signal.location}</div>
-                    <div className="text-xs text-muted-foreground">{signal.id}</div>
-                  </div>
-                  <Badge 
-                    variant="outline"
-                    className={getEfficiencyColor(signal.efficiency)}
+          {/* Signal Status Distribution */}
+          <Card className="dashboard-card">
+            <CardHeader>
+              <CardTitle className="text-lg flex items-center gap-2">
+                <Target className="w-5 h-5 text-green-400" />
+                Signal Status Distribution
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={300}>
+                <PieChart>
+                  <Pie
+                    data={signalStatusData}
+                    cx="50%"
+                    cy="50%"
+                    labelLine={false}
+                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                    outerRadius={80}
+                    fill="#8884d8"
+                    dataKey="value"
                   >
-                    {signal.efficiency}%
-                  </Badge>
-                </div>
-                <div className="flex items-center justify-between text-xs text-muted-foreground">
-                  <span>Throughput: {signal.throughput}/hr</span>
-                  <span className="flex items-center gap-1">
-                    <div className={`w-2 h-2 rounded-full ${getCongestionColor(signal.efficiency)}`} />
-                    {signal.efficiency >= 90 ? 'Optimal' : signal.efficiency >= 75 ? 'Good' : 'Needs Attention'}
-                  </span>
-                </div>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
+                    {signalStatusData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    ))}
+                  </Pie>
+                  <Tooltip />
+                </PieChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+        </div>
 
-        {/* Hourly Traffic Pattern */}
+        {/* Congestion Heatmap */}
         <Card className="dashboard-card">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base flex items-center gap-2">
-              <BarChart3 className="w-4 h-4 text-primary" />
-              Hourly Traffic Pattern
+          <CardHeader>
+            <CardTitle className="text-lg flex items-center gap-2">
+              <Thermometer className="w-5 h-5 text-red-400" />
+              Traffic Intensity Heatmap
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-3">
-              {analytics.hourlyTraffic.map((data) => (
-                <div key={data.hour} className="flex items-center gap-3">
-                  <span className="text-xs font-mono w-8 text-muted-foreground">
-                    {data.hour.toString().padStart(2, '0')}:00
-                  </span>
-                  <div className="flex-1 flex items-center gap-2">
-                    <div className="flex-1 bg-muted/30 rounded-full h-2 overflow-hidden">
-                      <div 
-                        className="h-full bg-gradient-to-r from-primary/60 to-primary transition-all duration-300"
-                        style={{ width: `${(data.vehicles / 600) * 100}%` }}
-                      />
+            <div className="grid grid-cols-4 gap-2 mb-4">
+              {heatmapData.map((cell, index) => (
+                <div
+                  key={index}
+                  className="relative p-4 rounded-lg text-center text-white font-medium text-sm transition-all hover:scale-105"
+                  style={{
+                    backgroundColor: `rgba(239, 68, 68, ${cell.intensity / 100})`,
+                    border: '1px solid rgba(239, 68, 68, 0.3)'
+                  }}
+                >
+                  <div>{cell.area}</div>
+                  <div className="text-xs opacity-90">{cell.intensity}%</div>
+                </div>
+              ))}
+            </div>
+            <div className="flex items-center justify-between text-xs text-muted-foreground">
+              <span>Low Traffic</span>
+              <div className="flex items-center gap-1">
+                <div className="w-4 h-2 bg-gradient-to-r from-green-500 via-yellow-500 to-red-500 rounded"></div>
+              </div>
+              <span>High Traffic</span>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Signal Performance Bar Chart */}
+        <Card className="dashboard-card">
+          <CardHeader>
+            <CardTitle className="text-lg flex items-center gap-2">
+              <Zap className="w-5 h-5 text-yellow-400" />
+              Signal Performance Efficiency
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={analytics.signalEfficiency}>
+                <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
+                <XAxis 
+                  dataKey="location" 
+                  fontSize={12}
+                  angle={-45}
+                  textAnchor="end"
+                  height={60}
+                />
+                <YAxis fontSize={12} />
+                <Tooltip 
+                  formatter={(value: any, name: string) => [
+                    name === 'efficiency' ? `${value}%` : `${value}/hr`,
+                    name === 'efficiency' ? 'Efficiency' : 'Throughput'
+                  ]}
+                />
+                <Bar dataKey="efficiency" fill="hsl(var(--primary))" />
+                <Bar dataKey="throughput" fill="hsl(var(--secondary))" />
+              </BarChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+
+        {/* Live Congestion Areas */}
+        <Card className="dashboard-card">
+          <CardHeader>
+            <CardTitle className="text-lg flex items-center gap-2">
+              <AlertTriangle className="w-5 h-5 text-red-400" />
+              Live Congestion Monitor
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {analytics.congestionAreas.map((area, index) => (
+                <div key={index} className="flex items-center gap-4 p-3 bg-muted/30 rounded-lg">
+                  <div className="flex-1">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="font-medium text-sm">{area.name}</span>
+                      <span className="text-xs text-muted-foreground">{area.vehicles} vehicles</span>
                     </div>
-                    <span className="text-xs font-medium w-12 text-right">
-                      {data.vehicles}
-                    </span>
+                    <Progress 
+                      value={area.level} 
+                      className="h-2"
+                    />
                   </div>
-                  <span className="text-xs text-muted-foreground w-16 text-right">
-                    {data.avgDelay.toFixed(1)}min
-                  </span>
+                  <Badge 
+                    variant="outline"
+                    className={
+                      area.level >= 80 ? "border-red-500/30 text-red-400" :
+                      area.level >= 60 ? "border-amber-500/30 text-amber-400" :
+                      "border-green-500/30 text-green-400"
+                    }
+                  >
+                    {area.level}%
+                  </Badge>
                 </div>
               ))}
             </div>
           </CardContent>
         </Card>
 
-        {/* System Status */}
+        {/* System Health */}
         <Card className="dashboard-card">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base">System Health</CardTitle>
+          <CardHeader>
+            <CardTitle className="text-lg">System Health Monitor</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-muted-foreground">AI Detection System</span>
-              <Badge className="bg-green-500/10 text-green-400 border-green-500/30">
-                Online
-              </Badge>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-muted-foreground">Database Sync</span>
-              <Badge className="bg-green-500/10 text-green-400 border-green-500/30">
-                Live
-              </Badge>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-muted-foreground">Signal Response</span>
-              <Badge className="bg-amber-500/10 text-amber-400 border-amber-500/30">
-                2.1s avg
-              </Badge>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-muted-foreground">Last Update</span>
-              <span className="text-sm font-medium text-primary animate-pulse">
-                Live
-              </span>
+          <CardContent>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-muted-foreground">AI Detection System</span>
+                  <Badge className="bg-green-500/10 text-green-400 border-green-500/30">
+                    Online
+                  </Badge>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-muted-foreground">Database Sync</span>
+                  <Badge className="bg-green-500/10 text-green-400 border-green-500/30">
+                    Live
+                  </Badge>
+                </div>
+              </div>
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-muted-foreground">Signal Response</span>
+                  <Badge className="bg-amber-500/10 text-amber-400 border-amber-500/30">
+                    2.1s avg
+                  </Badge>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-muted-foreground">Last Update</span>
+                  <span className="text-sm font-medium text-primary animate-pulse">
+                    Live
+                  </span>
+                </div>
+              </div>
             </div>
           </CardContent>
         </Card>

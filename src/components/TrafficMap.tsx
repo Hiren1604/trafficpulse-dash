@@ -37,10 +37,11 @@ export const TrafficMap = ({ signals, hotspots, onSignalClick, selectedHotspot }
     // Add zoom control to top-right
     L.control.zoom({ position: 'topright' }).addTo(map.current);
 
-    // Add OpenStreetMap tiles (completely free!)
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '© OpenStreetMap contributors',
+    // Add Google Maps-like satellite tiles (free!)
+    L.tileLayer('https://{s}.google.com/vt/lyrs=s,h&x={x}&y={y}&z={z}', {
       maxZoom: 18,
+      subdomains: ['mt0', 'mt1', 'mt2', 'mt3'],
+      attribution: '© Google Maps'
     }).addTo(map.current);
 
     // Create custom icons for traffic signals
@@ -263,7 +264,7 @@ export const TrafficMap = ({ signals, hotspots, onSignalClick, selectedHotspot }
 
       {/* Map Attribution */}
       <div className="absolute bottom-2 right-2 text-xs text-muted-foreground bg-black/50 px-2 py-1 rounded">
-        Free OpenStreetMap
+        © Google Maps
       </div>
     </div>
   );
