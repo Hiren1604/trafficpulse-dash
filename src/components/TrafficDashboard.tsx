@@ -173,12 +173,10 @@ export const TrafficDashboard = () => {
     setSelectedHotspot(null); // Clear hotspot selection
   };
 
-  const handleHotspotClick = (hotspotId: string) => {
-    const hotspot = hotspots.find(h => h.id === hotspotId);
-    if (hotspot) {
-      setSelectedHotspot(hotspot);
-      setSelectedSignal(null); // Clear signal selection
-    }
+  const handleHotspotClick = (hotspot: HotspotArea) => {
+    setSelectedHotspot(hotspot);
+    setSelectedSignal(null); // Clear signal selection
+    setShowSignalControl(false); // Reset signal control state
   };
 
   const handleSignalStatusChange = (signalId: string, newStatus: 'red' | 'amber' | 'green') => {
@@ -221,7 +219,10 @@ export const TrafficDashboard = () => {
         <TrafficSidebar
           trafficAreas={trafficAreas}
           hotspots={hotspots}
-          onHotspotClick={handleHotspotClick}
+           onHotspotClick={hotspotId => {
+             const hotspot = hotspots.find(h => h.id === hotspotId);
+             if (hotspot) handleHotspotClick(hotspot);
+           }}
           selectedHotspot={selectedHotspot?.id || null}
         />
       </div>
@@ -295,38 +296,35 @@ export const TrafficDashboard = () => {
           </div>
 
           {/* Right Sidebar - Control Panels */}
-          {activeView === 'map' && selectedSignal && (
-            <div className="w-80">
-              <SignalControlPanel
-                signal={selectedSignal}
-                onStatusChange={handleSignalStatusChange}
-                onClose={() => setSelectedSignal(null)}
-              />
-            </div>
-          )}
-
-          {activeView === 'map' && selectedHotspot && !showSignalControl && (
-            <div className="w-80">
-              <HotspotControlPanel
-                hotspot={selectedHotspot}
-                onUpdateHotspot={handleHotspotUpdate}
-                onClose={() => setSelectedHotspot(null)}
-                onOpenSignalControl={handleOpenSignalControl}
-              />
-            </div>
-          )}
-
-          {activeView === 'map' && showSignalControl && selectedSignal && (
-            <div className="w-80">
-              <SignalControlPanel
-                signal={selectedSignal}
-                onStatusChange={handleSignalStatusChange}
-                onClose={() => {
-                  setShowSignalControl(false);
-                  setSelectedSignal(null);
-                }}
-              />
-            </div>
+          {activeView === 'map' && (
+            <>
+              {/* Show Signal Control Panel when either directly selected or opened from hotspot */}
+              {(selectedSignal && !selectedHotspot) || showSignalControl ? (
+                <div className="w-80">
+                  <SignalControlPanel
+                    signal={selectedSignal!}
+                    onStatusChange={handleSignalStatusChange}
+                    onClose={() => {
+                      if (showSignalControl) {
+                        setShowSignalControl(false);
+                        setSelectedSignal(null);
+                      } else {
+                        setSelectedSignal(null);
+                      }
+                    }}
+                  />
+                </div>
+              ) : selectedHotspot ? (
+                <div className="w-80">
+                  <HotspotControlPanel
+                    hotspot={selectedHotspot}
+                    onUpdateHotspot={handleHotspotUpdate}
+                    onClose={() => setSelectedHotspot(null)}
+                    onOpenSignalControl={handleOpenSignalControl}
+                  />
+                </div>
+              ) : null}
+            </>
           )}
         </div>
       </div>

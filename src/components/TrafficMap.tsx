@@ -28,10 +28,10 @@ export const TrafficMap = ({ signals, hotspots, onSignalClick, onHotspotClick, s
   useEffect(() => {
     if (!mapContainer.current) return;
 
-    // Initialize map
+    // Initialize map centered on Bhubaneswar, Odisha
     map.current = L.map(mapContainer.current, {
-      center: [28.6139, 77.2090], // New Delhi, India
-      zoom: 11,
+      center: [20.2961, 85.8245], // Bhubaneswar, Odisha
+      zoom: 12,
       zoomControl: false
     });
 
