@@ -22,9 +22,10 @@ interface HotspotControlPanelProps {
   hotspot: HotspotArea;
   onClose: () => void;
   onUpdateHotspot: (hotspotId: string, updates: Partial<HotspotArea>) => void;
+  onOpenSignalControl?: (hotspotId: string) => void;
 }
 
-export const HotspotControlPanel = ({ hotspot, onClose, onUpdateHotspot }: HotspotControlPanelProps) => {
+export const HotspotControlPanel = ({ hotspot, onClose, onUpdateHotspot, onOpenSignalControl }: HotspotControlPanelProps) => {
   const [aiMode, setAiMode] = useState(true);
   const [interventionLevel, setInterventionLevel] = useState([70]);
   const [trafficRedirection, setTrafficRedirection] = useState(false);
@@ -61,7 +62,9 @@ export const HotspotControlPanel = ({ hotspot, onClose, onUpdateHotspot }: Hotsp
 
   const handleManualIntervention = () => {
     console.log(`Manual intervention triggered for hotspot ${hotspot.id}`);
-    // This would trigger immediate traffic management actions
+    if (onOpenSignalControl) {
+      onOpenSignalControl(hotspot.id);
+    }
   };
 
   return (
@@ -126,25 +129,6 @@ export const HotspotControlPanel = ({ hotspot, onClose, onUpdateHotspot }: Hotsp
           </div>
         </div>
 
-        {/* AI Control Mode */}
-        <div className="p-4 bg-muted/30 rounded-lg space-y-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Bot className="w-4 h-4 text-primary" />
-              <span className="font-medium">AI Management Mode</span>
-            </div>
-            <Switch
-              checked={aiMode}
-              onCheckedChange={handleAiModeToggle}
-            />
-          </div>
-          {aiMode && (
-            <div className="text-xs text-muted-foreground flex items-center gap-1">
-              <Zap className="w-3 h-3 text-green-400" />
-              AI is actively managing this hotspot
-            </div>
-          )}
-        </div>
 
         {/* Intervention Level */}
         <div className="space-y-3">
@@ -166,39 +150,6 @@ export const HotspotControlPanel = ({ hotspot, onClose, onUpdateHotspot }: Hotsp
           </p>
         </div>
 
-        {/* Traffic Management Options */}
-        <div className="space-y-4">
-          <h4 className="font-medium text-sm flex items-center gap-2">
-            <Settings className="w-4 h-4" />
-            Management Options
-          </h4>
-
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium">Traffic Redirection</p>
-                <p className="text-xs text-muted-foreground">Redirect traffic to alternate routes</p>
-              </div>
-              <Switch
-                checked={trafficRedirection}
-                onCheckedChange={handleTrafficRedirection}
-                disabled={!aiMode}
-              />
-            </div>
-
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium">Signal Coordination</p>
-                <p className="text-xs text-muted-foreground">Coordinate nearby traffic signals</p>
-              </div>
-              <Switch
-                checked={signalCoordination}
-                onCheckedChange={handleSignalCoordination}
-                disabled={!aiMode}
-              />
-            </div>
-          </div>
-        </div>
 
         {/* Congestion Progress */}
         <div className="space-y-3">
@@ -229,7 +180,7 @@ export const HotspotControlPanel = ({ hotspot, onClose, onUpdateHotspot }: Hotsp
             onClick={handleManualIntervention}
             className="w-full border-amber-500/30 text-amber-400 hover:bg-amber-500/10"
           >
-            Trigger Manual Intervention
+            Open Timer Configuration
           </Button>
         </div>
 

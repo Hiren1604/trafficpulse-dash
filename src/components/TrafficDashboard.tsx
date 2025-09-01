@@ -40,33 +40,34 @@ export const TrafficDashboard = () => {
   const [selectedSignal, setSelectedSignal] = useState<TrafficSignal | null>(null);
   const [selectedHotspot, setSelectedHotspot] = useState<HotspotArea | null>(null);
   const [activeView, setActiveView] = useState<'map' | 'analytics' | 'settings'>('map');
+  const [showSignalControl, setShowSignalControl] = useState(false);
 
-  // Mock data with Indian locations - in real app this would come from API
+  // Mock data with Odisha locations - in real app this would come from API
   const trafficAreas: TrafficArea[] = [
     {
       id: '1',
-      name: 'Connaught Place',
+      name: 'Bhubaneswar Airport',
       congestionLevel: 'high',
       signalCount: 12,
       lastUpdated: '2 min ago'
     },
     {
       id: '2',
-      name: 'Karol Bagh Junction',
+      name: 'Kalinga Stadium',
       congestionLevel: 'medium',
       signalCount: 8,
       lastUpdated: '1 min ago'
     },
     {
       id: '3',
-      name: 'ITO Intersection',
+      name: 'Patia Square',
       congestionLevel: 'low',
       signalCount: 6,
       lastUpdated: '3 min ago'
     },
     {
       id: '4',
-      name: 'AIIMS Flyover',
+      name: 'Jaydev Vihar',
       congestionLevel: 'medium',
       signalCount: 4,
       lastUpdated: '1 min ago'
@@ -75,51 +76,51 @@ export const TrafficDashboard = () => {
 
   const trafficSignals: TrafficSignal[] = [
     {
-      id: 'DL-001',
-      latitude: 28.6321,
-      longitude: 77.2194,
+      id: 'OD-001',
+      latitude: 20.2961,
+      longitude: 85.8245,
       status: 'green',
-      location: 'CP Central Circle',
+      location: 'Bhubaneswar Airport',
       isActive: true
     },
     {
-      id: 'DL-002',
-      latitude: 28.6139,
-      longitude: 77.2090,
+      id: 'OD-002',
+      latitude: 20.2700,
+      longitude: 85.8312,
       status: 'red',
-      location: 'India Gate Circle',
+      location: 'Kalinga Stadium',
       isActive: true
     },
     {
-      id: 'DL-003',
-      latitude: 28.6252,
-      longitude: 77.2065,
+      id: 'OD-003',
+      latitude: 20.3587,
+      longitude: 85.8171,
       status: 'amber',
-      location: 'Khan Market Junction',
+      location: 'Patia Square',
       isActive: true
     },
     {
-      id: 'DL-004',
-      latitude: 28.5494,
-      longitude: 77.2500,
+      id: 'OD-004',
+      latitude: 20.3019,
+      longitude: 85.8449,
       status: 'green',
-      location: 'Saket Metro Station',
+      location: 'Jaydev Vihar',
       isActive: true
     },
     {
-      id: 'DL-005',
-      latitude: 28.6304,
-      longitude: 77.2177,
+      id: 'OD-005',
+      latitude: 20.2700,
+      longitude: 85.8400,
       status: 'red',
-      location: 'Rajiv Chowk Metro',
+      location: 'Saheed Nagar',
       isActive: false
     },
     {
-      id: 'DL-006',
-      latitude: 28.5355,
-      longitude: 77.3910,
+      id: 'OD-006',
+      latitude: 20.2506,
+      longitude: 85.8472,
       status: 'green',
-      location: 'Noida Sector 18',
+      location: 'Nayapalli',
       isActive: true
     }
   ];
@@ -127,9 +128,9 @@ export const TrafficDashboard = () => {
   const hotspots: HotspotArea[] = [
     {
       id: 'hot-1',
-      name: 'ITO Traffic Junction',
-      latitude: 28.6289,
-      longitude: 77.2065,
+      name: 'Airport Square Junction',
+      latitude: 20.2961,
+      longitude: 85.8245,
       severity: 'critical',
       aiDetected: true,
       vehicleCount: 145,
@@ -137,9 +138,9 @@ export const TrafficDashboard = () => {
     },
     {
       id: 'hot-2',
-      name: 'AIIMS Flyover Exit',
-      latitude: 28.5672,
-      longitude: 77.2100,
+      name: 'Kalinga Hospital Circle',
+      latitude: 20.2700,
+      longitude: 85.8312,
       severity: 'high',
       aiDetected: true,
       vehicleCount: 98,
@@ -147,9 +148,9 @@ export const TrafficDashboard = () => {
     },
     {
       id: 'hot-3',
-      name: 'Lajpat Nagar Market',
-      latitude: 28.5675,
-      longitude: 77.2434,
+      name: 'Patia Crossing',
+      latitude: 20.3587,
+      longitude: 85.8171,
       severity: 'medium',
       aiDetected: true,
       vehicleCount: 67,
@@ -157,9 +158,9 @@ export const TrafficDashboard = () => {
     },
     {
       id: 'hot-4',
-      name: 'Nehru Place Metro',
-      latitude: 28.5494,
-      longitude: 77.2519,
+      name: 'Jaydev Vihar Metro',
+      latitude: 20.3019,
+      longitude: 85.8449,
       severity: 'high',
       aiDetected: true,
       vehicleCount: 89,
@@ -198,6 +199,21 @@ export const TrafficDashboard = () => {
     }
   };
 
+  const handleOpenSignalControl = (hotspotId: string) => {
+    // Find a signal near the hotspot for timer configuration
+    const hotspot = hotspots.find(h => h.id === hotspotId);
+    if (hotspot) {
+      // Find the closest signal to the hotspot
+      const closestSignal = trafficSignals.find(signal => 
+        Math.abs(signal.latitude - hotspot.latitude) < 0.01 && 
+        Math.abs(signal.longitude - hotspot.longitude) < 0.01
+      ) || trafficSignals[0]; // Fallback to first signal
+      
+      setSelectedSignal(closestSignal);
+      setShowSignalControl(true);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-dashboard flex">
       {/* Left Sidebar */}
@@ -217,7 +233,7 @@ export const TrafficDashboard = () => {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-2xl font-bold text-foreground mb-2">
-                Traffic Management System - Delhi NCR
+                Traffic Management System - Bhubaneswar, Odisha
               </h1>
               <p className="text-muted-foreground">
                 Real-time traffic monitoring and signal control dashboard
@@ -289,12 +305,26 @@ export const TrafficDashboard = () => {
             </div>
           )}
 
-          {activeView === 'map' && selectedHotspot && (
+          {activeView === 'map' && selectedHotspot && !showSignalControl && (
             <div className="w-80">
               <HotspotControlPanel
                 hotspot={selectedHotspot}
                 onUpdateHotspot={handleHotspotUpdate}
                 onClose={() => setSelectedHotspot(null)}
+                onOpenSignalControl={handleOpenSignalControl}
+              />
+            </div>
+          )}
+
+          {activeView === 'map' && showSignalControl && selectedSignal && (
+            <div className="w-80">
+              <SignalControlPanel
+                signal={selectedSignal}
+                onStatusChange={handleSignalStatusChange}
+                onClose={() => {
+                  setShowSignalControl(false);
+                  setSelectedSignal(null);
+                }}
               />
             </div>
           )}

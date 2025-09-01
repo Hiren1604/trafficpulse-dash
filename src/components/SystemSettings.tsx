@@ -20,7 +20,7 @@ import {
 } from 'lucide-react';
 
 export const SystemSettings = () => {
-  const [systemMode, setSystemMode] = useState<'ai' | 'manual' | 'hybrid'>('hybrid');
+  const [systemMode, setSystemMode] = useState<'manual'>('manual');
   const [aiAggressiveness, setAiAggressiveness] = useState([75]);
   const [autoIntervention, setAutoIntervention] = useState(true);
   const [notifications, setNotifications] = useState(true);
@@ -29,7 +29,7 @@ export const SystemSettings = () => {
   const [congestionThreshold, setCongestionThreshold] = useState([80]);
   const [responseTime, setResponseTime] = useState('normal');
 
-  const handleSystemModeChange = (mode: 'ai' | 'manual' | 'hybrid') => {
+  const handleSystemModeChange = (mode: 'manual') => {
     setSystemMode(mode);
     console.log(`System mode changed to: ${mode}`);
   };
@@ -54,7 +54,7 @@ export const SystemSettings = () => {
   };
 
   return (
-    <div className="h-full bg-card/50 backdrop-blur-sm border border-border/50 rounded-lg flex flex-col overflow-hidden">
+    <div className="h-full bg-card/50 backdrop-blur-sm border border-border/50 rounded-lg flex flex-col overflow-hidden relative z-10">
       {/* Header */}
       <div className="p-6 border-b border-border/50">
         <h2 className="text-2xl font-bold text-foreground flex items-center gap-2">
@@ -74,40 +74,15 @@ export const SystemSettings = () => {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="grid grid-cols-3 gap-3">
+            <div className="flex justify-center">
               <Button
-                variant={systemMode === 'ai' ? 'default' : 'outline'}
-                onClick={() => handleSystemModeChange('ai')}
-                className="h-auto p-4 flex flex-col items-center gap-2"
+                variant="default"
+                className="h-auto p-6 flex flex-col items-center gap-3 min-w-[200px]"
               >
-                <Bot className="w-6 h-6" />
+                <UserCheck className="w-8 h-8" />
                 <div className="text-center">
-                  <div className="font-medium">AI Driven</div>
-                  <div className="text-xs opacity-80">Fully automated</div>
-                </div>
-              </Button>
-              
-              <Button
-                variant={systemMode === 'hybrid' ? 'default' : 'outline'}
-                onClick={() => handleSystemModeChange('hybrid')}
-                className="h-auto p-4 flex flex-col items-center gap-2"
-              >
-                <Activity className="w-6 h-6" />
-                <div className="text-center">
-                  <div className="font-medium">Hybrid</div>
-                  <div className="text-xs opacity-80">AI + Manual</div>
-                </div>
-              </Button>
-              
-              <Button
-                variant={systemMode === 'manual' ? 'default' : 'outline'}
-                onClick={() => handleSystemModeChange('manual')}
-                className="h-auto p-4 flex flex-col items-center gap-2"
-              >
-                <UserCheck className="w-6 h-6" />
-                <div className="text-center">
-                  <div className="font-medium">Manual</div>
-                  <div className="text-xs opacity-80">Human controlled</div>
+                  <div className="font-medium text-lg">Manual Control</div>
+                  <div className="text-sm opacity-80">Human supervised system</div>
                 </div>
               </Button>
             </div>
@@ -120,91 +95,12 @@ export const SystemSettings = () => {
                 </Badge>
               </div>
               <p className="text-xs text-muted-foreground">
-                {systemMode === 'ai' && 'AI algorithms manage all traffic signals and hotspots automatically'}
-                {systemMode === 'manual' && 'Traffic authorities have full manual control over all systems'}
-                {systemMode === 'hybrid' && 'AI suggestions with human oversight and manual override capabilities'}
+                Traffic authorities have full manual control over all systems with AI-powered insights and recommendations
               </p>
             </div>
           </CardContent>
         </Card>
 
-        {/* AI Configuration */}
-        {(systemMode === 'ai' || systemMode === 'hybrid') && (
-          <Card className="dashboard-card">
-            <CardHeader>
-              <CardTitle className="text-lg flex items-center gap-2">
-                <Bot className="w-5 h-5 text-blue-400" />
-                AI Configuration
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              {/* AI Aggressiveness */}
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <label className="text-sm font-medium">AI Aggressiveness</label>
-                  <span className="text-sm text-muted-foreground">{aiAggressiveness[0]}%</span>
-                </div>
-                <Slider
-                  value={aiAggressiveness}
-                  onValueChange={handleAiAggresiveness}
-                  max={100}
-                  min={10}
-                  step={5}
-                  className="w-full"
-                />
-                <p className="text-xs text-muted-foreground">
-                  Higher values allow more frequent and aggressive traffic interventions
-                </p>
-              </div>
-
-              {/* Congestion Threshold */}
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <label className="text-sm font-medium">Global Congestion Threshold</label>
-                  <span className="text-sm text-muted-foreground">{congestionThreshold[0]}%</span>
-                </div>
-                <Slider
-                  value={congestionThreshold}
-                  onValueChange={handleCongestionThreshold}
-                  max={100}
-                  min={30}
-                  step={5}
-                  className="w-full"
-                />
-                <p className="text-xs text-muted-foreground">
-                  AI will activate hotspot management when congestion exceeds this level
-                </p>
-              </div>
-
-              {/* Auto Intervention */}
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium">Auto Intervention</p>
-                  <p className="text-xs text-muted-foreground">Allow AI to automatically adjust signals</p>
-                </div>
-                <Switch
-                  checked={autoIntervention}
-                  onCheckedChange={setAutoIntervention}
-                />
-              </div>
-
-              {/* Response Time */}
-              <div className="space-y-2">
-                <label className="text-sm font-medium">AI Response Speed</label>
-                <Select value={responseTime} onValueChange={setResponseTime}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="conservative">Conservative (5-10s)</SelectItem>
-                    <SelectItem value="normal">Normal (2-5s)</SelectItem>
-                    <SelectItem value="aggressive">Aggressive (1-2s)</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </CardContent>
-          </Card>
-        )}
 
         {/* System Controls */}
         <Card className="dashboard-card">

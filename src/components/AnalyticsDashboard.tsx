@@ -30,6 +30,7 @@ import {
   Thermometer,
   Zap
 } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 export interface AnalyticsData {
   totalSignals: number;
@@ -62,18 +63,18 @@ export const AnalyticsDashboard = () => {
     totalVehicles: 1247,
     averageDelay: '3.2 min',
     peakHours: ['08:00-10:00', '17:00-19:00'],
-    congestionAreas: [
-      { name: 'CP - Connaught Place', level: 85, vehicles: 342 },
-      { name: 'Karol Bagh Junction', level: 72, vehicles: 186 },
-      { name: 'ITO Intersection', level: 68, vehicles: 154 },
-      { name: 'AIIMS Flyover', level: 45, vehicles: 98 }
-    ],
-    signalEfficiency: [
-      { id: 'DL-001', location: 'CP Central Circle', efficiency: 92, throughput: 450 },
-      { id: 'DL-002', location: 'Khan Market', efficiency: 87, throughput: 320 },
-      { id: 'DL-003', location: 'Lajpat Nagar', efficiency: 78, throughput: 280 },
-      { id: 'DL-004', location: 'Saket Metro', efficiency: 95, throughput: 380 }
-    ],
+        congestionAreas: [
+          { name: 'Bhubaneswar Airport', level: 85, vehicles: 342 },
+          { name: 'Kalinga Stadium', level: 72, vehicles: 186 },
+          { name: 'Patia Square', level: 68, vehicles: 154 },
+          { name: 'Jaydev Vihar', level: 45, vehicles: 98 }
+        ],
+        signalEfficiency: [
+          { id: 'OD-001', location: 'Airport Square', efficiency: 92, throughput: 450 },
+          { id: 'OD-002', location: 'Kalinga Hospital', efficiency: 87, throughput: 320 },
+          { id: 'OD-003', location: 'Patia Crossing', efficiency: 78, throughput: 280 },
+          { id: 'OD-004', location: 'Jaydev Vihar', efficiency: 95, throughput: 380 }
+        ],
     hourlyTraffic: [
       { hour: 6, vehicles: 145, avgDelay: 1.2 },
       { hour: 7, vehicles: 298, avgDelay: 2.1 },
@@ -95,18 +96,18 @@ export const AnalyticsDashboard = () => {
 
   // Heatmap data for traffic intensity
   const heatmapData = [
-    { area: 'CP', intensity: 85, x: 0, y: 0 },
-    { area: 'Karol Bagh', intensity: 72, x: 1, y: 0 },
-    { area: 'ITO', intensity: 68, x: 2, y: 0 },
-    { area: 'AIIMS', intensity: 45, x: 3, y: 0 },
-    { area: 'Khan Market', intensity: 78, x: 0, y: 1 },
-    { area: 'Lajpat Nagar', intensity: 65, x: 1, y: 1 },
-    { area: 'Nehru Place', intensity: 88, x: 2, y: 1 },
-    { area: 'Saket', intensity: 52, x: 3, y: 1 },
-    { area: 'GK-1', intensity: 58, x: 0, y: 2 },
-    { area: 'GK-2', intensity: 63, x: 1, y: 2 },
-    { area: 'Defence Colony', intensity: 41, x: 2, y: 2 },
-    { area: 'Hauz Khas', intensity: 76, x: 3, y: 2 }
+    { area: 'Airport', intensity: 85, x: 0, y: 0 },
+    { area: 'Kalinga Stadium', intensity: 72, x: 1, y: 0 },
+    { area: 'Patia', intensity: 68, x: 2, y: 0 },
+    { area: 'Jaydev Vihar', intensity: 45, x: 3, y: 0 },
+    { area: 'Nayapalli', intensity: 78, x: 0, y: 1 },
+    { area: 'Saheed Nagar', intensity: 65, x: 1, y: 1 },
+    { area: 'Khandagiri', intensity: 88, x: 2, y: 1 },
+    { area: 'Chandrashekharpur', intensity: 52, x: 3, y: 1 },
+    { area: 'Old Town', intensity: 58, x: 0, y: 2 },
+    { area: 'Rasulgarh', intensity: 63, x: 1, y: 2 },
+    { area: 'Mancheswar', intensity: 41, x: 2, y: 2 },
+    { area: 'Sundarpada', intensity: 76, x: 3, y: 2 }
   ];
 
   // Traffic signal status pie chart data
@@ -337,38 +338,6 @@ export const AnalyticsDashboard = () => {
           </CardContent>
         </Card>
 
-        {/* Signal Performance Bar Chart */}
-        <Card className="dashboard-card">
-          <CardHeader>
-            <CardTitle className="text-lg flex items-center gap-2">
-              <Zap className="w-5 h-5 text-yellow-400" />
-              Signal Performance Efficiency
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={analytics.signalEfficiency}>
-                <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
-                <XAxis 
-                  dataKey="location" 
-                  fontSize={12}
-                  angle={-45}
-                  textAnchor="end"
-                  height={60}
-                />
-                <YAxis fontSize={12} />
-                <Tooltip 
-                  formatter={(value: any, name: string) => [
-                    name === 'efficiency' ? `${value}%` : `${value}/hr`,
-                    name === 'efficiency' ? 'Efficiency' : 'Throughput'
-                  ]}
-                />
-                <Bar dataKey="efficiency" fill="hsl(var(--primary))" />
-                <Bar dataKey="throughput" fill="hsl(var(--secondary))" />
-              </BarChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
 
         {/* Live Congestion Areas */}
         <Card className="dashboard-card">
@@ -381,24 +350,42 @@ export const AnalyticsDashboard = () => {
           <CardContent>
             <div className="space-y-4">
               {analytics.congestionAreas.map((area, index) => (
-                <div key={index} className="flex items-center gap-4 p-3 bg-muted/30 rounded-lg">
+                <div key={index} className="flex items-center gap-4 p-4 bg-gradient-to-r from-muted/20 to-muted/40 rounded-lg border border-border/20 hover:shadow-lg transition-all duration-200">
                   <div className="flex-1">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="font-medium text-sm">{area.name}</span>
-                      <span className="text-xs text-muted-foreground">{area.vehicles} vehicles</span>
+                    <div className="flex items-center justify-between mb-3">
+                      <span className="font-semibold text-sm text-foreground">{area.name}</span>
+                      <span className="text-xs text-muted-foreground bg-muted/50 px-2 py-1 rounded-full">
+                        {area.vehicles} vehicles
+                      </span>
                     </div>
-                    <Progress 
-                      value={area.level} 
-                      className="h-2"
-                    />
+                    <div className="relative">
+                      <Progress 
+                        value={area.level} 
+                        className="h-3 bg-muted/50"
+                      />
+                      <div className="absolute inset-0 rounded-full overflow-hidden">
+                        <div 
+                          className="h-full transition-all duration-500 ease-out rounded-full shadow-sm"
+                          style={{
+                            width: `${area.level}%`,
+                            background: area.level >= 80 
+                              ? 'linear-gradient(45deg, #ef4444, #dc2626)' 
+                              : area.level >= 60 
+                              ? 'linear-gradient(45deg, #f59e0b, #d97706)' 
+                              : 'linear-gradient(45deg, #10b981, #059669)'
+                          }}
+                        />
+                      </div>
+                    </div>
                   </div>
                   <Badge 
                     variant="outline"
-                    className={
-                      area.level >= 80 ? "border-red-500/30 text-red-400" :
-                      area.level >= 60 ? "border-amber-500/30 text-amber-400" :
-                      "border-green-500/30 text-green-400"
-                    }
+                    className={cn(
+                      "text-sm font-semibold px-3 py-1 shadow-sm",
+                      area.level >= 80 ? "border-red-500/50 text-red-400 bg-red-500/10 shadow-red-500/20" :
+                      area.level >= 60 ? "border-amber-500/50 text-amber-400 bg-amber-500/10 shadow-amber-500/20" :
+                      "border-green-500/50 text-green-400 bg-green-500/10 shadow-green-500/20"
+                    )}
                   >
                     {area.level}%
                   </Badge>
